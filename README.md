@@ -1,6 +1,6 @@
 # Sudoku Game - AWS Deployment
 
-A modern, responsive Sudoku game deployed on AWS with CloudFront CDN.
+Interactive Sudoku web game with HTML, CSS, and JavaScript deployed on AWS.
 
 ## 🎮 Live Demo
 
