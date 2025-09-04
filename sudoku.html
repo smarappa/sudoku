@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sudoku Game</title>
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'GA_MEASUREMENT_ID');
+    </script>
+    
+    <!-- AWS CloudWatch RUM -->
+    <script>
+        (function(n,i,v,r,s,c,x,z){x=window.AwsRumClient={q:[],n:n,i:i,v:v,r:r,c:c};
+        window[n]=function(c,p){x.q.push({c:c,p:p});};z=document.createElement('script');
+        z.async=true;z.src=s;document.head.appendChild(z);})
+        ('cwr','00000000-0000-0000-0000-000000000000','1.0.0','us-east-1',
+        'https://client.rum.us-east-1.amazonaws.com/1.x.x/cwr.js',
+        {sessionSampleRate:1,guestRoleArn:'arn:aws:iam::ACCOUNT:role/RUM-Monitor-us-east-1-000000000-Unauth',
+        identityPoolId:'us-east-1:00000000-0000-0000-0000-000000000000',endpoint:'https://dataplane.rum.us-east-1.amazonaws.com',
+        telemetries:['performance','errors','http'],allowCookies:true});
+    </script>
 </head>
 <body>
     <div class="game-container">
@@ -273,6 +294,11 @@
                     cell.classList.remove('invalid');
                     cell.classList.add('valid');
                     setTimeout(() => cell.classList.remove('valid'), 500);
+                    
+                    // Analytics: Track correct moves
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'correct_move', {'event_category': 'gameplay'});
+                    }
                 } else {
                     this.mistakes++;
                     document.getElementById('mistakes').textContent = this.mistakes;
@@ -282,6 +308,11 @@
                         this.board[row][col] = 0;
                         cell.value = '';
                     }, 600);
+                    
+                    // Analytics: Track mistakes
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'mistake', {'event_category': 'gameplay', 'value': this.mistakes});
+                    }
                 }
                 
                 this.updateProgress();
