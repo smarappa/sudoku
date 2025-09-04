@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="game-title">Sudoku</h1>
+
+        <div class="game-info">
+            <div class="info-card">
+                <div class="info-label">Difficulty</div>
+                <div class="info-value difficulty-medium" id="difficulty">Medium</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Timer</div>
+                <div class="info-value" id="timer">00:00</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Mistakes</div>
+                <div class="info-value" id="mistakes">0</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Progress</div>
+                <div class="info-value" id="progress">0%</div>
+            </div>
+        </div>
+
+        <div class="sudoku-board" id="sudoku-board">
+            <!-- 9x9 Grid Layout Verification -->
+            <!-- Row 1: Cells 0-8 -->
+            <!-- Row 2: Cells 9-17 -->
+            <!-- Row 3: Cells 18-26 -->
+            <!-- Row 4: Cells 27-35 -->
+            <!-- Row 5: Cells 36-44 -->
+            <!-- Row 6: Cells 45-53 -->
+            <!-- Row 7: Cells 54-62 -->
+            <!-- Row 8: Cells 63-71 -->
+            <!-- Row 9: Cells 72-80 -->
+        </div>
+
+        <div class="number-pad">
+            <button class="number-btn" data-number="1">1</button>
+            <button class="number-btn" data-number="2">2</button>
+            <button class="number-btn" data-number="3">3</button>
+            <button class="number-btn" data-number="4">4</button>
+            <button class="number-btn" data-number="5">5</button>
+            <button class="number-btn" data-number="6">6</button>
+            <button class="number-btn" data-number="7">7</button>
+            <button class="number-btn" data-number="8">8</button>
+            <button class="number-btn" data-number="9">9</button>
+            <button class="number-btn clear-btn" data-number="clear">Clear</button>
+        </div>
+    </div>
+
+    <script>
+        class SudokuGame {
+            constructor() {
+                this.board = Array(9).fill().map(() => Array(9).fill(0));
+                this.solution = Array(9).fill().map(() => Array(9).fill(0));
+                this.selectedCell = null;
+                this.mistakes = 0;
+                this.startTime = Date.now();
+                this.timer = null;
+                this.difficulty = 'Medium';
+                
+                this.initializeBoard();
+                this.generatePuzzle();
+                this.startTimer();
+                this.bindEvents();
+            }
+
+            initializeBoard() {
+                const boardElement = document.getElementById('sudoku-board');
+                boardElement.innerHTML = '';
+                
+                for (let i = 0; i < 81; i++) {
+                    const cell = document.createElement('input');
+                    cell.className = 'sudoku-cell';
+                    cell.type = 'text';
+                    cell.maxLength = 1;
+                    cell.dataset.index = i;
+                    boardElement.appendChild(cell);
+                }
+            }
+
+            generatePuzzle() {
+                // Simple puzzle for demo - in a real game, you'd generate or fetch puzzles
+                const puzzle = [
+                    [5,3,0,0,7,0,0,0,0],
+                    [6,0,0,1,9,5,0,0,0],
+                    [0,9,8,0,0,0,0,6,0],
+                    [8,0,0,0,6,0,0,0,3],
+                    [4,0,0,8,0,3,0,0,1],
+                    [7,0,0,0,2,0,0,0,6],
+                    [0,6,0,0,0,0,2,8,0],
+                    [0,0,0,4,1,9,0,0,5],
+                    [0,0,0,0,8,0,0,7,9]
+                ];
+
+                const solution = [
+                    [5,3,4,6,7,8,9,1,2],
+                    [6,7,2,1,9,5,3,4,8],
+                    [1,9,8,3,4,2,5,6,7],
+                    [8,5,9,7,6,1,4,2,3],
+                    [4,2,6,8,5,3,7,9,1],
+                    [7,1,3,9,2,4,8,5,6],
+                    [9,6,1,5,3,7,2,8,4],
+                    [2,8,7,4,1,9,6,3,5],
+                    [3,4,5,2,8,6,1,7,9]
+                ];
+
+                this.board = puzzle.map(row => [...row]);
+                this.solution = solution.map(row => [...row]);
+                
+                this.renderBoard();
+                this.updateProgress();
+            }
+
+            renderBoard() {
+                const cells = document.querySelectorAll('.sudoku-cell');
+                cells.forEach((cell, index) => {
+                    const row = Math.floor(index / 9);
+                    const col = index % 9;
+                    const value = this.board[row][col];
+                    
+                    cell.value = value === 0 ? '' : value;
+                    cell.className = 'sudoku-cell';
+                    
+                    if (value !== 0) {
+                        cell.classList.add('prefilled');
+                        cell.readOnly = true;
+                    } else {
+                        cell.readOnly = false;
+                    }
+                });
+            }
+
+            bindEvents() {
+                const cells = document.querySelectorAll('.sudoku-cell');
+                const numberBtns = document.querySelectorAll('.number-btn');
+
+                cells.forEach(cell => {
+                    cell.addEventListener('click', (e) => this.selectCell(e.target));
+                    cell.addEventListener('input', (e) => this.handleInput(e));
+                    cell.addEventListener('keydown', (e) => this.handleKeydown(e));
+                });
+
+                numberBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => this.handleNumberPad(e));
+                });
+
+                document.addEventListener('keydown', (e) => this.handleGlobalKeydown(e));
+            }
+
+            selectCell(cell) {
+                if (cell.readOnly) return;
+                
+                document.querySelectorAll('.sudoku-cell').forEach(c => c.classList.remove('selected'));
+                cell.classList.add('selected');
+                this.selectedCell = cell;
+                cell.focus();
+            }
+
+            handleInput(e) {
+                const value = e.target.value;
+                if (!/^[1-9]$/.test(value)) {
+                    e.target.value = '';
+                    return;
+                }
+
+                const index = parseInt(e.target.dataset.index);
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                const num = parseInt(value);
+
+                this.makeMove(row, col, num, e.target);
+                this.checkCompletions();
+            }
+
+            handleKeydown(e) {
+                if (e.key >= '1' && e.key <= '9') {
+                    e.preventDefault();
+                    const num = parseInt(e.key);
+                    const index = parseInt(e.target.dataset.index);
+                    const row = Math.floor(index / 9);
+                    const col = index % 9;
+                    this.makeMove(row, col, num, e.target);
+                } else if (e.key === 'Backspace' || e.key === 'Delete') {
+                    e.preventDefault();
+                    this.clearCell(e.target);
+                }
+            }
+
+            handleNumberPad(e) {
+                if (!this.selectedCell) return;
+                
+                const number = e.target.dataset.number;
+                if (number === 'clear') {
+                    this.clearCell(this.selectedCell);
+                } else {
+                    const index = parseInt(this.selectedCell.dataset.index);
+                    const row = Math.floor(index / 9);
+                    const col = index % 9;
+                    this.makeMove(row, col, parseInt(number), this.selectedCell);
+                }
+            }
+
+            handleGlobalKeydown(e) {
+                if (!this.selectedCell) return;
+                
+                const index = parseInt(this.selectedCell.dataset.index);
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                
+                let newIndex = index;
+                
+                switch(e.key) {
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        newIndex = Math.max(0, index - 9);
+                        break;
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        newIndex = Math.min(80, index + 9);
+                        break;
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        newIndex = col > 0 ? index - 1 : index;
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        newIndex = col < 8 ? index + 1 : index;
+                        break;
+                    case 'Tab':
+                        e.preventDefault();
+                        newIndex = e.shiftKey ? 
+                            (index > 0 ? index - 1 : 80) : 
+                            (index < 80 ? index + 1 : 0);
+                        break;
+                    case 'Escape':
+                        e.preventDefault();
+                        this.selectedCell.classList.remove('selected');
+                        this.selectedCell = null;
+                        return;
+                }
+                
+                if (newIndex !== index) {
+                    const newCell = document.querySelector(`[data-index="${newIndex}"]`);
+                    this.selectCell(newCell);
+                }
+            }
+
+            makeMove(row, col, num, cell) {
+                if (this.board[row][col] !== 0 && cell.readOnly) return;
+                
+                this.board[row][col] = num;
+                cell.value = num;
+                
+                if (this.solution[row][col] === num) {
+                    cell.classList.remove('invalid');
+                    cell.classList.add('valid');
+                    setTimeout(() => cell.classList.remove('valid'), 500);
+                } else {
+                    this.mistakes++;
+                    document.getElementById('mistakes').textContent = this.mistakes;
+                    cell.classList.add('invalid');
+                    setTimeout(() => {
+                        cell.classList.remove('invalid');
+                        this.board[row][col] = 0;
+                        cell.value = '';
+                    }, 600);
+                }
+                
+                this.updateProgress();
+                this.checkCompletion();
+            }
+            
+            checkCompletions() {
+                // Check completed rows, columns, and boxes
+                for (let i = 0; i < 9; i++) {
+                    this.checkRowCompletion(i);
+                    this.checkColCompletion(i);
+                    this.checkBoxCompletion(i);
+                }
+            }
+            
+            checkRowCompletion(row) {
+                const isComplete = this.board[row].every((cell, col) => 
+                    cell !== 0 && cell === this.solution[row][col]
+                );
+                
+                if (isComplete) {
+                    for (let col = 0; col < 9; col++) {
+                        const index = row * 9 + col;
+                        const cell = document.querySelector(`[data-index="${index}"]`);
+                        cell.classList.add('completed-row');
+                    }
+                }
+            }
+            
+            checkColCompletion(col) {
+                const isComplete = this.board.every((row, rowIndex) => 
+                    row[col] !== 0 && row[col] === this.solution[rowIndex][col]
+                );
+                
+                if (isComplete) {
+                    for (let row = 0; row < 9; row++) {
+                        const index = row * 9 + col;
+                        const cell = document.querySelector(`[data-index="${index}"]`);
+                        cell.classList.add('completed-col');
+                    }
+                }
+            }
+            
+            checkBoxCompletion(boxIndex) {
+                const startRow = Math.floor(boxIndex / 3) * 3;
+                const startCol = (boxIndex % 3) * 3;
+                
+                let isComplete = true;
+                for (let r = 0; r < 3; r++) {
+                    for (let c = 0; c < 3; c++) {
+                        const row = startRow + r;
+                        const col = startCol + c;
+                        if (this.board[row][col] === 0 || 
+                            this.board[row][col] !== this.solution[row][col]) {
+                            isComplete = false;
+                            break;
+                        }
+                    }
+                    if (!isComplete) break;
+                }
+                
+                if (isComplete) {
+                    for (let r = 0; r < 3; r++) {
+                        for (let c = 0; c < 3; c++) {
+                            const row = startRow + r;
+                            const col = startCol + c;
+                            const index = row * 9 + col;
+                            const cell = document.querySelector(`[data-index="${index}"]`);
+                            cell.classList.add('completed-box');
+                        }
+                    }
+                }
+            }
+
+            clearCell(cell) {
+                if (cell.readOnly) return;
+                
+                const index = parseInt(cell.dataset.index);
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                
+                this.board[row][col] = 0;
+                cell.value = '';
+                cell.classList.remove('invalid', 'valid');
+                this.updateProgress();
+            }
+
+            updateProgress() {
+                const filledCells = this.board.flat().filter(cell => cell !== 0).length;
+                const progress = Math.round((filledCells / 81) * 100);
+                document.getElementById('progress').textContent = `${progress}%`;
+            }
+
+            checkCompletion() {
+                const isComplete = this.board.every((row, rowIndex) => 
+                    row.every((cell, colIndex) => cell === this.solution[rowIndex][colIndex])
+                );
+                
+                if (isComplete) {
+                    clearInterval(this.timer);
+                    document.querySelectorAll('.sudoku-cell').forEach(cell => {
+                        cell.style.animation = 'completePulse 0.6s ease-in-out';
+                    });
+                    setTimeout(() => {
+                        alert('🎉 Congratulations! You completed the puzzle!');
+                    }, 800);
+                }
+            }
+
+            startTimer() {
+                this.timer = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                    const seconds = (elapsed % 60).toString().padStart(2, '0');
+                    document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+                }, 1000);
+            }
+        }
+
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new SudokuGame();
+        });
+    </script>
+</body>
+</html>

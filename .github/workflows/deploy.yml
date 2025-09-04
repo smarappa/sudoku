@@ -1,0 +1,42 @@
+name: Deploy Sudoku App
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+        
+    - name: Deploy to S3
+      run: |
+        aws s3 cp sudoku.html s3://sudoku-game-1756950518/ --content-type "text/html"
+        aws s3 cp static/style.css s3://sudoku-game-1756950518/ --content-type "text/css"
+        
+    - name: Deploy to CloudFront S3
+      run: |
+        aws s3 cp sudoku.html s3://sudoku-final-1756952030/ --content-type "text/html"
+        aws s3 cp static/style.css s3://sudoku-final-1756952030/ --content-type "text/css"
+        
+    - name: Invalidate CloudFront cache
+      run: |
+        aws cloudfront create-invalidation --distribution-id E1LD984NTKN8WY --paths "/*"
+        
+    - name: Deployment complete
+      run: |
+        echo "✅ Sudoku app deployed successfully!"
+        echo "🌐 S3 Website: http://sudoku-game-1756950518.s3-website-us-east-1.amazonaws.com"
+        echo "🚀 CloudFront: https://d10i28jiugsdtx.cloudfront.net"

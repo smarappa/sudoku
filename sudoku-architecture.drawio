@@ -1,0 +1,132 @@
+<mxfile host="app.diagrams.net" modified="2024-01-01T00:00:00.000Z" agent="5.0" etag="abc123" version="22.1.16" type="device">
+  <diagram name="Sudoku Game Architecture" id="sudoku-arch">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- User -->
+        <mxCell id="user" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="50" y="200" width="30" height="60" />
+        </mxCell>
+        
+        <!-- Internet -->
+        <mxCell id="internet" value="Internet" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="150" y="180" width="120" height="80" />
+        </mxCell>
+        
+        <!-- CloudFront -->
+        <mxCell id="cloudfront" value="Amazon CloudFront&#xa;(CDN)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=#945DF2;gradientDirection=north;fillColor=#5A30B5;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudfront;" vertex="1" parent="1">
+          <mxGeometry x="350" y="180" width="78" height="78" />
+        </mxCell>
+        
+        <!-- S3 Bucket -->
+        <mxCell id="s3" value="Amazon S3&#xa;(Static Website)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=#60A337;gradientDirection=north;fillColor=#277116;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;" vertex="1" parent="1">
+          <mxGeometry x="550" y="180" width="78" height="78" />
+        </mxCell>
+        
+        <!-- Files in S3 -->
+        <mxCell id="html" value="sudoku.html" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="520" y="320" width="80" height="30" />
+        </mxCell>
+        
+        <mxCell id="css" value="style.css" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="620" y="320" width="80" height="30" />
+        </mxCell>
+        
+        <!-- Developer -->
+        <mxCell id="developer" value="Developer" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="50" y="450" width="30" height="60" />
+        </mxCell>
+        
+        <!-- AWS CLI -->
+        <mxCell id="awscli" value="AWS CLI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="150" y="460" width="80" height="40" />
+        </mxCell>
+        
+        <!-- CDK (Optional) -->
+        <mxCell id="cdk" value="AWS CDK&#xa;(Optional)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="150" y="520" width="80" height="40" />
+        </mxCell>
+        
+        <!-- Connections -->
+        <mxCell id="conn1" value="HTTPS Request" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="user" target="internet">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="100" y="220" as="sourcePoint" />
+            <mxPoint x="150" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="conn2" value="Global CDN" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="internet" target="cloudfront">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="270" y="220" as="sourcePoint" />
+            <mxPoint x="320" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="conn3" value="Origin Request" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="cloudfront" target="s3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="428" y="220" as="sourcePoint" />
+            <mxPoint x="478" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="conn4" value="" style="endArrow=classic;html=1;rounded=0;dashed=1;" edge="1" parent="1" source="s3" target="html">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="570" y="258" as="sourcePoint" />
+            <mxPoint x="560" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="conn5" value="" style="endArrow=classic;html=1;rounded=0;dashed=1;" edge="1" parent="1" source="s3" target="css">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="608" y="258" as="sourcePoint" />
+            <mxPoint x="660" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="conn6" value="Deploy" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="developer" target="awscli">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="80" y="480" as="sourcePoint" />
+            <mxPoint x="130" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="conn7" value="Upload Files" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="awscli" target="s3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="230" y="480" as="sourcePoint" />
+            <mxPoint x="550" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="conn8" value="Infrastructure" style="endArrow=classic;html=1;rounded=0;dashed=1;" edge="1" parent="1" source="cdk" target="cloudfront">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="230" y="540" as="sourcePoint" />
+            <mxPoint x="350" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Title -->
+        <mxCell id="title" value="Sudoku Game - AWS Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="50" width="250" height="30" />
+        </mxCell>
+        
+        <!-- Legend -->
+        <mxCell id="legend" value="Components:&#xa;• HTML5 Sudoku Game&#xa;• Responsive CSS Design&#xa;• JavaScript Game Logic&#xa;• AWS S3 Static Hosting&#xa;• CloudFront CDN&#xa;• HTTPS Delivery" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="50" y="600" width="200" height="120" />
+        </mxCell>
+        
+        <!-- Features Box -->
+        <mxCell id="features" value="Game Features:&#xa;• 9x9 Sudoku Grid&#xa;• Visual Feedback&#xa;• Timer &amp; Progress&#xa;• Mobile Responsive&#xa;• Keyboard Support&#xa;• Animations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#01579b;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="300" y="600" width="150" height="120" />
+        </mxCell>
+        
+        <!-- AWS Services Box -->
+        <mxCell id="awsservices" value="AWS Services:&#xa;• S3 Static Website&#xa;• CloudFront CDN&#xa;• Global Edge Locations&#xa;• HTTPS Encryption&#xa;• High Availability&#xa;• Low Latency" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#ff8f00;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="500" y="600" width="150" height="120" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
