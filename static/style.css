@@ -32,6 +32,12 @@ body {
     text-align: center;
     margin-bottom: 24px;
     letter-spacing: -0.025em;
+    animation: titleGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+    from { filter: drop-shadow(0 0 5px rgba(79, 70, 229, 0.3)); }
+    to { filter: drop-shadow(0 0 15px rgba(124, 58, 237, 0.6)); }
 }
 
 .game-info {
